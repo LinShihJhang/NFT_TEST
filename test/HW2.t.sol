@@ -6,42 +6,35 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import {Test, console2} from "forge-std/Test.sol";
+import {MyToken} from "../src/HW2.sol";
 
-contract MyToken is ERC721, ERC721Burnable, Ownable {
+//問題
+//1. myToken.randimSafeMint 有辦法測試revert嗎？出現revert的狀況也是隨機的
+//2. 還有什麼測試需要寫？
 
-    string public baseURI;
-    uint public constant totalSupply = 500;
-    uint public currenSupply;
+contract HW2Test is Test {
+    MyToken public myToken;
+    address BobAddress;
 
-    constructor(address initialOwner, string memory baseURI_)
-        ERC721("HW2 Do not send NFT to me ", "NONFT")
-        Ownable(initialOwner)
-    {
-        baseURI = baseURI_;
+    function setUp() public {
+        BobAddress = makeAddr('Bob');
+        myToken = new MyToken(BobAddress, "ipfs://QmW9wxFDp82guExQGxo4riSMv9VGj8Nnj6SZDt4ECdKHJH/");
     }
 
-    function safeMint(address to, uint256 tokenId) public onlyOwner {
-        _safeMint(to, tokenId);
+    function testSetURI() public {
+        vm.startPrank(BobAddress);
+        myToken.safeMint(address(BobAddress), 0);
+        assertEq(myToken.tokenURI(0), "ipfs://QmW9wxFDp82guExQGxo4riSMv9VGj8Nnj6SZDt4ECdKHJH/0");
+        myToken.setBaseURI("ipfs://QmSRxpLr6qF2rkRQ9GLCrxP4yBjHvq4vysfTzGGhgrayXH/");
+        assertEq(myToken.tokenURI(0), "ipfs://QmSRxpLr6qF2rkRQ9GLCrxP4yBjHvq4vysfTzGGhgrayXH/0");
+        vm.stopPrank();
     }
 
-    function randimSafeMint(address to) public onlyOwner {
-        uint256 tokenId = uint256(keccak256(abi.encodePacked(block.prevrandao, block.timestamp, msg.sender))) % 500;
-        require(_ownerOf(tokenId) == address(0x0), "TokenId is already mint.");
-        require(currenSupply < totalSupply, "Mint End! TotalSupply is 500!");
-        currenSupply += 1 ;
-        _safeMint(to, tokenId);
-    }
-
-    /**
-     * @dev Base URI for computing {tokenURI}. If set, the resulting URI for each
-     * token will be the concatenation of the `baseURI` and the `tokenId`. Empty
-     * by default, can be overridden in child contracts.
-     */
-    function _baseURI() internal view override virtual  returns (string memory) {
-        return baseURI;
-    }
-
-    function setBaseURI(string memory baseURI_) onlyOwner external {
-        baseURI=baseURI_;
-    }
+    // function testRandimSafeMint(){
+    //     vm.startPrank(BobAddress);
+    //     vm.expectRevert(bytes("mint Failed!"));
+    //     myToken.randimSafeMint(address(0x0));
+    //     vm.stopPrank();      
+    // }
 }

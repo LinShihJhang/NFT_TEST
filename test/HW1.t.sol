@@ -39,7 +39,6 @@ contract HW1Test is Test {
         assertEq(hwToken.ownerOf(tokenId), address(BobAddress));
 
         //------------------------------
-
         // vm.startPrank(address(nftReceiver));
         // tokenId += 1;
         // vm.expectRevert(bytes("mint Failed!"));
