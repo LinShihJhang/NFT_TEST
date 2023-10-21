@@ -59,7 +59,7 @@ contract NFTReceiver is IERC721Receiver, HW_Token {
             (bool success, ) = _hwContract.call{value: 0 }(
                 abi.encodeWithSignature("mint(address,uint256)", from, tokenId)
             );
-            require(success, "safe Mint Failed!");
+            require(success, "mint Failed!");
         }
 
         return this.onERC721Received.selector;
