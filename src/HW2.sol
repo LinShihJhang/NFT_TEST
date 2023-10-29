@@ -40,7 +40,7 @@ contract MyToken is ERC721, ERC721Burnable, Ownable {
     }
 
     function revealMetadata(uint256 tokenId) public onlyOwner {
-        //require(tokenIdToMetadataId[tokenId] > 0,"TokenId is ready reveal.");
+        require(metadataId(tokenId) == 0, "TokenId is ready reveal.");
         //tokenIdToMetadataId[tokenId] = getRandom() % 500 + 1;
         tokenIdToMetadataId[tokenId] = tokenId + 1;
     }
