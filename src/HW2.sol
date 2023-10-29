@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.20;
+pragma solidity 0.8.21;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
@@ -9,9 +9,11 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract MyToken is ERC721, ERC721Burnable, Ownable {
 
+    using Strings for uint256;
     string public baseURI;
     uint public constant totalSupply = 500;
     uint public currenSupply;
+    mapping(uint256=>uint256) tokenIdToMetadataId;
 
     constructor(address initialOwner, string memory baseURI_)
         ERC721("HW2 Do not send NFT to me ", "NONFT")
@@ -20,16 +22,27 @@ contract MyToken is ERC721, ERC721Burnable, Ownable {
         baseURI = baseURI_;
     }
 
+    function getRandom() public view returns(uint256){
+        return uint256(keccak256(abi.encodePacked(block.prevrandao, block.timestamp, msg.sender)));
+    }
+
     function safeMint(address to, uint256 tokenId) public onlyOwner {
+        require(tokenId<500, "Max tokenId is 499!");
         _safeMint(to, tokenId);
     }
 
     function randimSafeMint(address to) public onlyOwner {
-        uint256 tokenId = uint256(keccak256(abi.encodePacked(block.prevrandao, block.timestamp, msg.sender))) % 500;
+        uint256 tokenId = getRandom() % 500;
         require(_ownerOf(tokenId) == address(0x0), "TokenId is already mint.");
         require(currenSupply < totalSupply, "Mint End! TotalSupply is 500!");
         currenSupply += 1 ;
         _safeMint(to, tokenId);
+    }
+
+    function revealMetadata(uint256 tokenId) public onlyOwner {
+        //require(tokenIdToMetadataId[tokenId] > 0,"TokenId is ready reveal.");
+        //tokenIdToMetadataId[tokenId] = getRandom() % 500 + 1;
+        tokenIdToMetadataId[tokenId] = tokenId + 1;
     }
 
     /**
@@ -43,5 +56,17 @@ contract MyToken is ERC721, ERC721Burnable, Ownable {
 
     function setBaseURI(string memory baseURI_) onlyOwner external {
         baseURI=baseURI_;
+    }
+
+    function metadataId(uint256 tokenId) public view  returns (uint) {
+        return tokenIdToMetadataId[tokenId];
+    }
+
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     */
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        _requireOwned(tokenId);
+        return string.concat(_baseURI(), metadataId(tokenId).toString());
     }
 }

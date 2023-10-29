@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.20;
+pragma solidity 0.8.21;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
@@ -8,10 +8,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import {Test, console2} from "forge-std/Test.sol";
 import {MyToken} from "../src/HW2.sol";
-
-//問題
-//1. myToken.randimSafeMint 有辦法測試revert嗎？出現revert的狀況也是隨機的
-//2. 還有什麼測試需要寫？
 
 contract HW2Test is Test {
     MyToken public myToken;
@@ -31,10 +27,12 @@ contract HW2Test is Test {
         vm.stopPrank();
     }
 
-    // function testRandimSafeMint(){
-    //     vm.startPrank(BobAddress);
-    //     vm.expectRevert(bytes("mint Failed!"));
-    //     myToken.randimSafeMint(address(0x0));
-    //     vm.stopPrank();      
-    // }
+    function testReavel() public {
+        vm.startPrank(BobAddress);
+        myToken.safeMint(address(BobAddress), 0);
+        myToken.revealMetadata(0);
+        assertNotEq(myToken.metadataId(0), 0);
+        assertEq(myToken.metadataId(0), 1);
+        vm.stopPrank();      
+    }
 }
